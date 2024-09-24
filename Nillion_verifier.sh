@@ -9,16 +9,16 @@ CYAN='\033[36m'
 MAGENTA='\033[35m'
 NC='\033[0m'
 
-# 한국어 체크하기
+# Проверка поддержки корейского языка
 check_korean_support() {
     if locale -a | grep -q "ko_KR.utf8"; then
-        return 0  # Korean support is installed
+        return 0  # Поддержка корейского языка установлена
     else
-        return 1  # Korean support is not installed
+        return 1  # Поддержка корейского языка не установлена
     fi
 }
 
-# 한국어 IF
+# Проверка на наличие корейского языка
 if check_korean_support; then
     echo -e "${CYAN}한글있긔 설치넘기긔.${NC}"
 else
@@ -27,10 +27,10 @@ else
     sudo locale-gen ko_KR.UTF-8
     sudo update-locale LANG=ko_KR.UTF-8 LC_MESSAGES=POSIX
     echo -e "${CYAN}설치 완료했긔.${NC}"
-fi
+}
 
 install_nillion() {
-# 기본 패키지 설치하기
+# Установка основных пакетов
 command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
@@ -44,71 +44,70 @@ sudo apt upgrade -y
 echo -e "${CYAN}sudo apt -qy install curl git jq lz4 build-essential screen${NC}"
 sudo apt -qy install curl git jq lz4 build-essential screen
 
-echo -e "${BOLD}${CYAN}Checking for Docker installation...${NC}"
+echo -e "${BOLD}${CYAN}Проверка установки Docker...${NC}"
 if ! command_exists docker; then
-    echo -e "${RED}Docker is not installed. Installing Docker...${NC}"
+    echo -e "${RED}Docker не установлен. Устанавливаю Docker...${NC}"
     curl -fsSL https://get.docker.com -o get-docker.sh
     sudo sh get-docker.sh
-    echo -e "${CYAN}Docker installed successfully.${NC}"
+    echo -e "${CYAN}Docker успешно установлен.${NC}"
 else
-    echo -e "${CYAN}Docker is already installed.${NC}"
+    echo -e "${CYAN}Docker уже установлен.${NC}"
 fi
 
 echo -e "${CYAN}docker version${NC}"
 docker version
 
-echo -e "${CYAN}installing nillion-accuser images...${NC}"
+echo -e "${CYAN}Установка образа nillion-accuser...${NC}"
 docker pull nillion/retailtoken-accuser:v1.0.1
 
-echo -e "${CYAN}making accuser directory...${NC}"
+echo -e "${CYAN}Создание директории accuser...${NC}"
 mkdir -p nillion/accuser
 
-echo -e "${CYAN}running nillion-accuser docker${NC}"
+echo -e "${CYAN}Запуск контейнера nillion-accuser...${NC}"
 docker run -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.1 initialise
 
-echo -e "${BOLD}${YELLOW}1.방문하세요: https://verifier.nillion.com/ (CTRL 누른 상태에서 마우스 클릭하면 들어가짐).${NC}"
-echo -e "${BOLD}${YELLOW}2. 우측 상단에 있는 'connect Keplr Wallet' 클릭해서 로그인하기.${NC}"
-echo -e "${BOLD}${YELLOW}3. https://faucet.testnet.nillion.com/ 여기 들어가서 1) 내가 홈페이지에 연결한 지갑 2) 방금 명령어로 만들어진 지갑에 Faucet 받기${NC}"
-echo -e "${BOLD}${YELLOW}4. 1시간 뒤에 명령어 다시 실행해서 2번 실행할 때 만나요 ㅎㅎ.${NC}"
+echo -e "${BOLD}${YELLOW}1. Посетите: https://verifier.nillion.com/ (CTRL + клик для перехода).${NC}"
+echo -e "${BOLD}${YELLOW}2. Нажмите 'connect Keplr Wallet' в правом верхнем углу для входа.${NC}"
+echo -e "${BOLD}${YELLOW}3. Перейдите на https://faucet.testnet.nillion.com/ и получите токены для созданного кошелька.${NC}"
+echo -e "${BOLD}${YELLOW}4. Через час снова выполните команду для продолжения.${NC}"
 }
 
 verify_nillion() {
-
-echo -ne "${MAGENTA}위의 과정을 다 하셨을까욤?${NC} [y/n] :"
-read -p response
+# Проверка выполнения предыдущих шагов пользователем
+echo -ne "${MAGENTA}Вы завершили все шаги?${NC} [y/n] :"
+read response
 if [[ "$response" =~ ^[yY]$ ]]; then
-    echo -e "${BOLD}${CYAN}업데이트 중...${NC}"
+    echo -e "${BOLD}${CYAN}Обновление...${NC}"
     sudo apt update -y
-    echo -e "${BOLD}${CYAN}이제부터 뭔 일이 일어날 텐데, CTRL + C '세 번' 누르면 꺼질 거임.${NC}"
+    echo -e "${BOLD}${CYAN}Сейчас произойдет несколько действий, нажмите CTRL + C три раза, чтобы остановить.${NC}"
 	sudo docker run -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:latest accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com/" --block-start "$(curl -s https://testnet-nillion-rpc.lavenderfive.com/abci_info | jq -r '.result.response.last_block_height')"
-
 else
-	echo -e "${RED}${BOLD}아${NC}"
-	echo -e "${YELLOW}${BOLD}니${NC}"
-	echo -e "${BLUE}${BOLD}그걸${NC}"
-	echo -e "${MAGENTA}${BOLD}tlqkf${NC}"
-	echo -e "${GREEN}${BOLD}왜 안 해${NC}"
-	echo -e "${CYAN}${BOLD}ㅆ;발롬아${NC}"
+	echo -e "${RED}${BOLD}А${NC}"
+	echo -e "${YELLOW}${BOLD}Почему${NC}"
+	echo -e "${BLUE}${BOLD}вы не сделали это?${NC}"
+	echo -e "${MAGENTA}${BOLD}tlqkf${NC}"  # Неясное слово, возможно, опечатка?
+	echo -e "${GREEN}${BOLD}Почему не сделали?${NC}"
+	echo -e "${CYAN}${BOLD}Пожалуйста!${NC}"
 	exit 1
 fi
 
-echo -e "${MAGENTA}만약 Registered : TRUE가 안 떴다면... 지갑 삭제하고 nillion  삭제하고... 다시 하세용 ㅎㅎ${NC}"
+echo -e "${MAGENTA}Если не появилось Registered : TRUE, удалите кошелек и Nillion, затем повторите процесс.${NC}"
 }
 
 restart_nillion() {
-
-echo -e "${CYAN}노드 재시작 중...${NC}"
+# Перезапуск узла Nillion
+echo -e "${CYAN}Перезапуск узла...${NC}"
 
 docker ps | grep nillion | awk '{print $1}' | xargs docker stop
 
 docker ps -a | grep nillion | awk '{print $1}' | xargs docker restart
 
-echo -e "${CYAN}다 됐어욤.${NC}"
+echo -e "${CYAN}Готово.${NC}"
 }
 
 uninstall_nillion() {
-
-echo -e "${CYAN}도커 멈추고 지우고 삭제하는 중....${NC}"
+# Удаление узла Nillion и Docker контейнеров
+echo -e "${CYAN}Остановка и удаление контейнеров...${NC}"
 
 docker ps | grep nillion | awk '{print $1}' | xargs docker stop
 
@@ -116,21 +115,21 @@ docker ps -a | grep nillion | awk '{print $1}' | xargs docker rm
 
 docker rmi `docker images | awk '$1 ~ /nillion/ {print $1, $3}'`
 
-echo -e "${CYAN}다 됐어욤.${NC}"
+echo -e "${CYAN}Готово.${NC}"
 }
 
-# 메인 메뉴
-echo && echo -e "${BOLD}${MAGENTA}nillion accuser 노드 자동 설치 스크립트${NC} by 비욘세제발죽어
- ${CYAN}원하는 거 고르시고 실행하시고 그러세효. ${NC}
+# Главное меню
+echo && echo -e "${BOLD}${MAGENTA}Автоматический скрипт установки узла Nillion Accuser${NC} by 비욘세제발죽어"
+echo -e "${CYAN}Выберите действие и выполните его.${NC}
  ———————————————————————
- ${GREEN} 1. 기본파일 설치 및 nillion 실행 ${NC}
- ${GREEN} 2. nillion 인증받기 ${NC}
- ${GREEN} 3. nillion 재시작하기 ${NC}
- ${GREEN} 4. nillion 삭제하기. ${NC}
+ ${GREEN} 1. Установить основные файлы и запустить Nillion ${NC}
+ ${GREEN} 2. Верификация Nillion ${NC}
+ ${GREEN} 3. Перезапуск Nillion ${NC}
+ ${GREEN} 4. Удаление Nillion ${NC}
  ———————————————————————" && echo
 
-# 사용자 입력 대기
-echo -ne "${BOLD}${MAGENTA}어떤 작업을 수행하고 싶으신가요? 위 항목을 참고해 숫자를 입력해 주세요: ${NC}"
+# Ожидание ввода пользователя
+echo -ne "${BOLD}${MAGENTA}Какое действие вы хотите выполнить? Введите номер: ${NC}"
 read -e num
 
 case "$num" in
@@ -147,5 +146,5 @@ case "$num" in
     uninstall_nillion
     ;;
 *)
-    echo -e "${BOLD}${RED}너무 우울해 시발.....................................................................................................................................................................................${NC}"
+    echo -e "${BOLD}${RED}Неверный ввод! Попробуйте еще раз.${NC}"
 esac
